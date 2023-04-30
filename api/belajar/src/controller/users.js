@@ -1,13 +1,18 @@
-const getAllUsers = (req, res) => {
-  const data = {
-    id: 1,
-    nama: "Reza Ahmad",
-    email: "reza@gmail.com",
-  };
-  res.json({
-    message: "GET all users success",
-    data: data,
-  });
+const userModel = require("../models/users");
+
+const getAllUsers = async (req, res) => {
+  try {
+    const [data] = await userModel.getAllUsers();
+    res.json({
+      message: "GET all users success",
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server ERROR",
+      err: error,
+    });
+  }
 };
 
 const createNewUsers = (req, res) => {
@@ -33,7 +38,7 @@ const deleteUser = (req, res) => {
     message: "DELETE user success",
     data: {
       id: idUser,
-      nama: 'Riza',
+      nama: "Riza",
       email: "riza@gail.com",
     },
   });

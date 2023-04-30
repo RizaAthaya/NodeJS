@@ -1,15 +1,18 @@
+require('dotenv').config()
+const PORT = process.env.PORT || 5000;
+
 const express = require("express");
 const app = express();
-const port = 4000;
 
 const usersRoutes = require("./routes/users");
 const middleware = require("./middleware/logs");
 
-// app.get('/', (req, res) => res.send('Hello World!'))
-
 app.use(middleware.logRequest);
-app.use(express.json())
+app.use(express.json());
 app.use("/users", usersRoutes);
+app.use("/", (req, res) => {
+  
+});
 
 app.get("/", (req, res) => {
   res.json({
@@ -18,4 +21,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(port, () => console.log(`App listening on port ${port}!`));
+app.listen(PORT, () =>
+  console.log(`App listening on port http://localhost:${PORT} !`)
+);
