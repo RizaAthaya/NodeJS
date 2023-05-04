@@ -1,11 +1,23 @@
-const express = require("express");
-const router = express.Router();
-const authController = require("../controller/auth");
-const { loginCheck, isAuth, isAdmin } = require("../middleware/auth");
+const router = require("express").Router();
+// const { asyncHandler } = require("../middlewares/asyncHandler");
+// const checkEmail = require("../middlewares/checkEmail");
+const authHandler = require('../middleware/auth')
+const {
+  signup: signupValidator,
+  signin: signinValidator,
+} = require("../validators/auth");
+const authController = require("../controller/auth.controller");
 
-router.post("/isadmin", authController.isAdmin);
-router.post("/signup", authController.postSignup);
-router.post("/signin", authController.postSignin);
-router.post("/user", loginCheck, isAuth, isAdmin, authController.allUser);
+router
+  .route("/signup")
+  .post(
+    signupValidator,
+    authHandler.asyncHandler(authHandler.checkEmail),
+    authHandler.asyncHandler(authController.signup)
+  );
+
+router
+  .route("/signin")
+  .post(signinValidator, authHandler.asyncHandler(authController.signin));
 
 module.exports = router;

@@ -1,48 +1,44 @@
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config/keys");
-const userModel = require("../models/users");
-
-const loginCheck = (req, res, next) => {
+const asyncHandler = (cb) => async (req, res, next) => {
   try {
-    let token = req.headers.token;
-    token = token.replace("Bearer ", "");
-    decode = jwt.verify(token, JWT_SECRET);
-    req.userDetails = decode;
-    next();
+    await cb(req, res, next);
   } catch (err) {
-    res.json({
-      error: "You must be logged in",
+    return res.status(500).json({
+      status: "error",
+      message: err.message,
     });
   }
+  return true;
 };
 
-const isAuth = (req, res, next) => {
-  let { loggedInUserId } = req.body;
-  if (
-    !loggedInUserId ||
-    !req.userDetails._id ||
-    loggedInUserId != req.userDetails._id
-  ) {
-    res.status(403).json({ error: "You are not authenticate" });
+const checkEmail = (req, res, next) => {
+  const { email } = req.body;
+  User.findByEmail(email, (_, data) => {
+    if (data) {
+      res.status(400).send({
+        status: "error",
+        message: `A user with email address '${email}' already exits`,
+      });
+      return;
+    }
+    next();
+  });
+};
+
+const validatorHandler = (req, res, next, schema) => {
+  const { error } = schema.validate(req.body);
+
+  if (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.details[0].message.replace("/[^a-zA-Z0-9 ]/g", ""),
+    });
+    return;
   }
   next();
 };
 
-const isAdmin = async (req, res, next) => {
-  try {
-    let reqUser = await userModel.findById(req.body.loggedInUserId);
-    // If user role 0 that's mean not admin it's customer
-    if (reqUser.userRole === 0) {
-      res.status(403).json({ error: "Access denied" });
-    }
-    next();
-  } catch {
-    res.status(404);
-  }
-};
-
 module.exports = {
-    loginCheck,
-    isAuth,
-    isAdmin
-}
+  asyncHandler,
+  checkEmail,
+  validatorHandler
+};
