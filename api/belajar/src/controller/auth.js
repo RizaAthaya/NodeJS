@@ -1,68 +1,77 @@
-const User = require('../models/users');
-const { hash: hashPassword, compare: comparePassword } = require('../utils/password');
-const { generate: generateToken } = require('../utils/token');
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
+const userModel = require("../models/users");
+const authModels = require("../models/auth");
+const { generate } = require("../utils/token");
+// const bcrypt = require("bcrypt");
 
-exports.signup = (req, res) => {
-    const { firstname, lastname, email, password } = req.body;
-    const hashedPassword = hashPassword(password.trim());
+const loginUser = async (req, res) => {
+  const { body } = req;
 
-    const user = new User(firstname.trim(), lastname.trim(), email.trim(), hashedPassword);
-
-    User.create(user, (err, data) => {
-        if (err) {
-            res.status(500).send({
-                status: "error",
-                message: err.message
-            });
-        } else {
-            const token = generateToken(data.id);
-            res.status(201).send({
-                status: "success",
-                data: {
-                    token,
-                    data
-                }
-            });
-        }
+  if (!body.email || !body.password) {
+    return res.status(400).json({
+      message: "ERROR 400: Bad request",
+      error: "Missing email or password",
     });
+  }
+
+  try {
+    const user = await authModels.searchUser(body);
+    console.log(user.password);
+    const [data] = await authModels.searchUser(body);
+    console.log(data[0].password)
+    // const data[0] = [data]
+    // console.log(password)
+
+    if (!user) {
+      return res.status(401).json({
+        message: "ERROR 401: Unauthorized",
+        error: "Invalid email or password",
+      });
+    }
+
+    bcrypt.compare(body.password, data[0].password, function (err, result) {
+      if (result) {
+        const userToken = generate(data[0].id);
+        return res.status(200).json({
+          message: "Login successful",
+          token: userToken,
+          user: data,
+        });
+        // Lanjutkan logika Anda setelah verifikasi password berhasil
+      } else {
+        return res.status(401).json({
+          message: "ERROR 401: Unauthorized",
+          error: "Invalid email or password",
+        });
+        // Lanjutkan logika Anda setelah verifikasi password gagal
+      }
+    });
+
+    // if (body.password === user.data.password) {
+    //   // Password match
+    //   // Perform login or generate token
+    //   const userToken = generateToken(data.id);
+    //   return res.status(200).json({
+    //     message: "Login successful",
+    //     user: user,
+    //     token: userToken,
+    //   });
+    // } else {
+    //   // Password doesn't match
+    //   return res.status(401).json({
+    //     message: "ERROR 401: Unauthorized",
+    //     error: "Invalid email or password",
+    //   });
+    // }
+  } catch (error) {
+    return res.status(500).json({
+      message: "ERROR 500: Internal Server Error",
+      error: error.message,
+    });
+  }
 };
 
-exports.signin = (req, res) => {
-    const { email, password } = req.body;
-    User.findByEmail(email.trim(), (err, data) => {
-        if (err) {
-            if (err.kind === "not_found") {
-                res.status(404).send({
-                    status: 'error',
-                    message: `User with email ${email} was not found`
-                });
-                return;
-            }
-            res.status(500).send({
-                status: 'error',
-                message: err.message
-            });
-            return;
-        }
-        if (data) {
-            if (comparePassword(password.trim(), data.password)) {
-                const token = generateToken(data.id);
-                res.status(200).send({
-                    status: 'success',
-                    data: {
-                        token,
-                        firstname: data.firstname,
-                        lastname: data.lastname,
-                        email: data.email
-                    }
-                });
-                return;
-            }
-            res.status(401).send({
-                status: 'error',
-                message: 'Incorrect password'
-            });
-        }
-    });
-
-}
+module.exports = {
+  loginUser,
+};

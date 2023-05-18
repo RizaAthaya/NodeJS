@@ -3,7 +3,7 @@ const userModel = require("../models/users");
 const getAllUsers = async (req, res) => {
   const { body } = req;
 
-  if (body.email || body.username || body.addres) {
+  if (body.email || body.username || body.number) {
     return res.status(400).json({
       message: "ERROR 400: Your request doesn't need body",
       // error: errorHandler.getErrorMessage(err)
@@ -27,17 +27,22 @@ const getAllUsers = async (req, res) => {
 const createNewUsers = async (req, res) => {
   const { body } = req;
 
-  if (!body.email || !body.username || !body.number) {
+  if (!body.email || !body.username || !body.password || !body.confirm_password) {
     return res.status(400).json({
       message: "ERROR 400: Bad request",
-      err: err,
+    });
+  }
+
+  if (body.password !== body.confirm_password){
+    return res.status(400).json({
+      message: "Your password doesn't match",
     });
   }
 
   try {
     await userModel.createNewUser(body);
     res.status(201).json({
-      message: "ERROR CREATE new user success",
+      message: "CREATE new user success",
       data: body,
     });
   } catch (error) {

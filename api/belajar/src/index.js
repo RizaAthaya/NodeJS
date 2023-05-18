@@ -9,14 +9,14 @@ const tagsRoutes = require("./routes/tags");
 const scholarshipsRoutes = require("./routes/scholarships");
 const mentorRoutes = require("./routes/mentor");
 const usersRoutes = require("./routes/users");
-// const authRoutes = require("./routes/auth")
+const authRoutes = require("./routes/auth")
 const middleware = require("./middleware/logs");
 
 app.use(cors());
 app.use(middleware.logRequest);
 app.use(express.json());
 app.use("/users", usersRoutes);
-// app.use("/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/mentor", mentorRoutes);
 app.use("/scholarships", scholarshipsRoutes);
 app.use("/tags", tagsRoutes);
