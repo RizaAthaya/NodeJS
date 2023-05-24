@@ -15,6 +15,8 @@ const getAllTagLevel = () => {
   return dbPool.execute(sql);
 };
 
+
+
 module.exports = {
   getAllTagCost, getAllTagCountry, getAllTagLevel
 };
