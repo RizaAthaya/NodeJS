@@ -46,8 +46,8 @@ const getFilterScholarships = (idLevel, idCost, idCountry) => {
     }
   }
 
-  const sql = `select scholarships.*, tag_cost.name as tag_cost, tag_country.name as tag_country, tag_level.name as tag_level from scholarships inner join tag_cost on tag_cost.id = scholarships.tag_cost_id inner join tag_country on tag_country.id = scholarships.tag_cost_id inner join tag_level on tag_level.id = scholarships.tag_cost_id ${lev} ${cos} ${cou} `;
-  console.log(sql)
+  const sql = `select scholarships.*, tag_cost.name as tag_cost, tag_country.name as tag_country, tag_level.name as tag_level from scholarships inner join tag_cost on tag_cost.id = scholarships.tag_cost_id inner join tag_country on tag_country.id = scholarships.tag_country_id inner join tag_level on tag_level.id = scholarships.tag_level_id ${lev} ${cos} ${cou} order by id`;
+  // console.log(sql)
   jml = 0;
   return dbPool.execute(sql);
 };

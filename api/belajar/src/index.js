@@ -1,6 +1,7 @@
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 
+const serverless = require('serverless-http');
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -15,11 +16,11 @@ const middleware = require("./middleware/logs");
 app.use(cors());
 app.use(middleware.logRequest);
 app.use(express.json());
-app.use("/users", usersRoutes);
-app.use("/auth", authRoutes);
-app.use("/mentor", mentorRoutes);
-app.use("/scholarships", scholarshipsRoutes);
-app.use("/tags", tagsRoutes);
+app.use("/.netlify/functions/api/users", usersRoutes);
+app.use("/.netlify/functions/api/auth", authRoutes);
+app.use("/.netlify/functions/api/mentor", mentorRoutes);
+app.use("/.netlify/functions/api/scholarships", scholarshipsRoutes);
+app.use("/.netlify/functions/api/tags", tagsRoutes);
 
 // app.get("/", (req, res) => {
 //   res.json({
@@ -31,3 +32,6 @@ app.use("/tags", tagsRoutes);
 app.listen(PORT, () =>
   console.log(`App listening on port http://localhost:${PORT} !`)
 );
+
+// app.use('/.netlify/functions/api', router)
+module.exports.handler = serverless(app)
